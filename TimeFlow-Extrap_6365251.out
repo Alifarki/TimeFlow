@@ -1,0 +1,143 @@
+Requirement already satisfied: pip in /projappl/project_2010689/packages/lib/python3.11/site-packages (26.0.1)
+Requirement already satisfied: setuptools in /projappl/project_2010689/packages/lib/python3.11/site-packages (82.0.1)
+Requirement already satisfied: wheel in /projappl/project_2010689/packages/lib/python3.11/site-packages (0.46.3)
+Requirement already satisfied: packaging>=24.0 in /usr/local/lib/python3.11/site-packages (from wheel) (24.2)
+Requirement already satisfied: mmengine in /projappl/project_2010689/packages/lib/python3.11/site-packages (0.10.7)
+Requirement already satisfied: addict in /usr/local/lib/python3.11/site-packages (from mmengine) (2.4.0)
+Requirement already satisfied: matplotlib in /usr/local/lib64/python3.11/site-packages (from mmengine) (3.9.4)
+Requirement already satisfied: numpy in /usr/local/lib64/python3.11/site-packages (from mmengine) (1.26.4)
+Requirement already satisfied: pyyaml in /usr/local/lib64/python3.11/site-packages (from mmengine) (6.0.2)
+Requirement already satisfied: rich in /usr/local/lib/python3.11/site-packages (from mmengine) (13.9.4)
+Requirement already satisfied: termcolor in /usr/local/lib/python3.11/site-packages (from mmengine) (2.5.0)
+Requirement already satisfied: yapf in /projappl/project_2010689/packages/lib/python3.11/site-packages (from mmengine) (0.43.0)
+Requirement already satisfied: opencv-python>=3 in /usr/local/lib64/python3.11/site-packages (from mmengine) (4.10.0.84)
+Requirement already satisfied: contourpy>=1.0.1 in /usr/local/lib64/python3.11/site-packages (from matplotlib->mmengine) (1.3.1)
+Requirement already satisfied: cycler>=0.10 in /usr/local/lib/python3.11/site-packages (from matplotlib->mmengine) (0.12.1)
+Requirement already satisfied: fonttools>=4.22.0 in /usr/local/lib64/python3.11/site-packages (from matplotlib->mmengine) (4.55.3)
+Requirement already satisfied: kiwisolver>=1.3.1 in /usr/local/lib64/python3.11/site-packages (from matplotlib->mmengine) (1.4.7)
+Requirement already satisfied: packaging>=20.0 in /usr/local/lib/python3.11/site-packages (from matplotlib->mmengine) (24.2)
+Requirement already satisfied: pillow>=8 in /usr/local/lib64/python3.11/site-packages (from matplotlib->mmengine) (10.4.0)
+Requirement already satisfied: pyparsing>=2.3.1 in /usr/local/lib/python3.11/site-packages (from matplotlib->mmengine) (3.2.0)
+Requirement already satisfied: python-dateutil>=2.7 in /usr/local/lib/python3.11/site-packages (from matplotlib->mmengine) (2.9.0.post0)
+Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.11/site-packages (from python-dateutil>=2.7->matplotlib->mmengine) (1.17.0)
+Requirement already satisfied: markdown-it-py>=2.2.0 in /usr/local/lib/python3.11/site-packages (from rich->mmengine) (3.0.0)
+Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /usr/local/lib/python3.11/site-packages (from rich->mmengine) (2.18.0)
+Requirement already satisfied: mdurl~=0.1 in /usr/local/lib/python3.11/site-packages (from markdown-it-py>=2.2.0->rich->mmengine) (0.1.2)
+Requirement already satisfied: platformdirs>=3.5.1 in /usr/local/lib/python3.11/site-packages (from yapf->mmengine) (4.3.6)
+Requirement already satisfied: mmcv-lite in /projappl/project_2010689/packages/lib/python3.11/site-packages (2.2.0)
+Requirement already satisfied: addict in /usr/local/lib/python3.11/site-packages (from mmcv-lite) (2.4.0)
+Requirement already satisfied: mmengine>=0.3.0 in /projappl/project_2010689/packages/lib/python3.11/site-packages (from mmcv-lite) (0.10.7)
+Requirement already satisfied: numpy in /usr/local/lib64/python3.11/site-packages (from mmcv-lite) (1.26.4)
+Requirement already satisfied: packaging in /usr/local/lib/python3.11/site-packages (from mmcv-lite) (24.2)
+Requirement already satisfied: Pillow in /usr/local/lib64/python3.11/site-packages (from mmcv-lite) (10.4.0)
+Requirement already satisfied: pyyaml in /usr/local/lib64/python3.11/site-packages (from mmcv-lite) (6.0.2)
+Requirement already satisfied: yapf in /projappl/project_2010689/packages/lib/python3.11/site-packages (from mmcv-lite) (0.43.0)
+Requirement already satisfied: opencv-python>=3 in /usr/local/lib64/python3.11/site-packages (from mmcv-lite) (4.10.0.84)
+Requirement already satisfied: matplotlib in /usr/local/lib64/python3.11/site-packages (from mmengine>=0.3.0->mmcv-lite) (3.9.4)
+Requirement already satisfied: rich in /usr/local/lib/python3.11/site-packages (from mmengine>=0.3.0->mmcv-lite) (13.9.4)
+Requirement already satisfied: termcolor in /usr/local/lib/python3.11/site-packages (from mmengine>=0.3.0->mmcv-lite) (2.5.0)
+Requirement already satisfied: contourpy>=1.0.1 in /usr/local/lib64/python3.11/site-packages (from matplotlib->mmengine>=0.3.0->mmcv-lite) (1.3.1)
+Requirement already satisfied: cycler>=0.10 in /usr/local/lib/python3.11/site-packages (from matplotlib->mmengine>=0.3.0->mmcv-lite) (0.12.1)
+Requirement already satisfied: fonttools>=4.22.0 in /usr/local/lib64/python3.11/site-packages (from matplotlib->mmengine>=0.3.0->mmcv-lite) (4.55.3)
+Requirement already satisfied: kiwisolver>=1.3.1 in /usr/local/lib64/python3.11/site-packages (from matplotlib->mmengine>=0.3.0->mmcv-lite) (1.4.7)
+Requirement already satisfied: pyparsing>=2.3.1 in /usr/local/lib/python3.11/site-packages (from matplotlib->mmengine>=0.3.0->mmcv-lite) (3.2.0)
+Requirement already satisfied: python-dateutil>=2.7 in /usr/local/lib/python3.11/site-packages (from matplotlib->mmengine>=0.3.0->mmcv-lite) (2.9.0.post0)
+Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.11/site-packages (from python-dateutil>=2.7->matplotlib->mmengine>=0.3.0->mmcv-lite) (1.17.0)
+Requirement already satisfied: markdown-it-py>=2.2.0 in /usr/local/lib/python3.11/site-packages (from rich->mmengine>=0.3.0->mmcv-lite) (3.0.0)
+Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /usr/local/lib/python3.11/site-packages (from rich->mmengine>=0.3.0->mmcv-lite) (2.18.0)
+Requirement already satisfied: mdurl~=0.1 in /usr/local/lib/python3.11/site-packages (from markdown-it-py>=2.2.0->rich->mmengine>=0.3.0->mmcv-lite) (0.1.2)
+Requirement already satisfied: platformdirs>=3.5.1 in /usr/local/lib/python3.11/site-packages (from yapf->mmcv-lite) (4.3.6)
+[2026-04-22 03:12:12,092] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+mmengine OK: 0.10.7
+mmcv OK: 2.2.0
+ConvModule import OK
+════════════════════════════════════════════════════════════════
+TIMEFLOW EXTRAPOLATION-FOCUSED TRAINING CONFIGURATION
+════════════════════════════════════════════════════════════════
+Job ID:             6365251
+Start time:         Wed Apr 22 03:12:27 EEST 2026
+Node:               g1101
+Data Root:          /scratch/project_2010689/datasetfull
+Project Directory:  /scratch/project_2010689/2026/TimeFlow_New2
+Save Directory:     /scratch/project_2010689/2026/TimeFlow_Results/timeflow_1mm_extrap
+Image Size:         128 128 128
+Min Interval:       12 months
+Min Gap:            6 months
+Max Extrap t:       2.5
+Batch Size:         1
+Epochs:             100
+Use AMP:            true (bf16)
+════════════════════════════════════════════════════════════════
+Command:
+ python -u scripts/train_timeflow_adni.py --data-root /scratch/project_2010689/datasetfull --voxel-size 1mm --image-size 128 128 128 --min-interval-months 12 --min-gap-months 6 --max-extrap-t 2.5 --t-embed-dim 16 --batch-size 1 --epochs 100 --lr 1e-4 --lr-decay 0.999 --anchor-sim-weight 0.5 --future-sim-weight 0.5 --interp-sim-weight 1.0 --extrap-sim-weight 2.0 --interp-delta-weight 1.0 --extrap-delta-weight 2.0 --gradicon-weight 0.05 --save-dir /scratch/project_2010689/2026/TimeFlow_Results/timeflow_1mm_extrap --save-interval 10 --num-workers 4 --amp-dtype bf16 --use-amp
+
+[2026-04-22 03:12:50,373] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+Random seed set as 42
+
+======================================================================
+LOADING TRIPLET DATASETS
+======================================================================
+
+======================================================================
+LOADING ADNI TRIPLET DATASET FOR EXTRAPOLATION-FOCUSED TIMEFLOW
+======================================================================
+Data root: /scratch/project_2010689/datasetfull
+Voxel size: 1mm
+Normalization: Per-image percentile 99.9 -> [0,1]
+Target shape: (128, 128, 128)
+Triplet batch size: 1
+Min total interval: 12 months
+Min local gap: 6 months
+Max extrapolation t: 2.5
+======================================================================
+
+[ADNITripletDataset] Loaded from: /scratch/project_2010689/datasetfull/train
+  Voxel size: 1mm
+  Target shape: (128, 128, 128)
+  Min interval months: 12
+  Min gap months: 6
+  Max extrapolation t: 2.5
+  Total subjects: 1390
+  Total scans: 8147
+  Total triplets: 23544
+
+[ADNITripletDataset] Loaded from: /scratch/project_2010689/datasetfull/val
+  Voxel size: 1mm
+  Target shape: (128, 128, 128)
+  Min interval months: 12
+  Min gap months: 6
+  Max extrapolation t: 2.5
+  Total subjects: 82
+  Total scans: 480
+  Total triplets: 1339
+
+[ADNITripletDataset] Loaded from: /scratch/project_2010689/datasetfull/test
+  Voxel size: 1mm
+  Target shape: (128, 128, 128)
+  Min interval months: 12
+  Min gap months: 6
+  Max extrapolation t: 2.5
+  Total subjects: 155
+  Total scans: 880
+  Total triplets: 2825
+
+======================================================================
+DATASET SUMMARY
+======================================================================
+Training subjects: 1,390
+Validation subjects: 82
+Test subjects: 155
+Training triplets: 23,544
+Validation triplets: 1,339
+Test triplets: 2,825
+======================================================================
+
+
+Model parameters: 1,318,579
+
+======================================================================
+STARTING TRAINING
+======================================================================
+
+Epoch 1/100
+----------------------------------------------------------------------
