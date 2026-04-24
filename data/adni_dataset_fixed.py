@@ -8,6 +8,7 @@ import numpy as np
 import scipy.ndimage
 import torch
 from torch.utils.data import Dataset, DataLoader
+from torch.utils.data.distributed import DistributedSampler
 
 
 @dataclass
@@ -33,13 +34,26 @@ def find_nifti_file(session_dir: Path, voxel_size: str) -> Optional[Path]:
     return nii_files[0] if nii_files else None
 
 
-def preprocess_volume(path: str, target_shape: Tuple[int, int, int]) -> np.ndarray:
+def preprocess_volume(
+    path: str,
+    target_shape: Tuple[int, int, int],
+    normalization: str = 'percentile',
+    percentile: float = 99.9,
+) -> np.ndarray:
     img = nib.load(path).get_fdata().astype(np.float32)
-    upper = np.percentile(img, 99.9)
-    img = np.clip(img, 0.0, upper)
-    if upper > 1e-8:
-        img = img / upper
-    img = np.clip(img, 0.0, 1.0)
+
+    if normalization == 'percentile':
+        upper = float(np.percentile(img, percentile))
+        img = np.clip(img, 0.0, upper)
+        if upper > 1e-8:
+            img = img / upper
+        img = np.clip(img, 0.0, 1.0)
+    elif normalization == 'none':
+        # Keep CAT12 intensities unchanged. This is useful as an ablation only.
+        img = img.astype(np.float32)
+    else:
+        raise ValueError(f"Unknown normalization: {normalization}")
+
     if img.shape != target_shape:
         zoom_factors = [t / s for t, s in zip(target_shape, img.shape)]
         img = scipy.ndimage.zoom(img, zoom=zoom_factors, order=1)
@@ -47,13 +61,26 @@ def preprocess_volume(path: str, target_shape: Tuple[int, int, int]) -> np.ndarr
 
 
 class ADNITripletDataset(Dataset):
-    def __init__(self, base_path: str, voxel_size: str = '1mm', target_shape: Tuple[int, int, int] = (128, 128, 128), min_interval_months: int = 12, min_gap_months: int = 6, max_extrap_t: float = 2.5, verbose: bool = True):
+    def __init__(
+        self,
+        base_path: str,
+        voxel_size: str = '1mm',
+        target_shape: Tuple[int, int, int] = (128, 128, 128),
+        min_interval_months: int = 12,
+        min_gap_months: int = 6,
+        max_extrap_t: float = 2.5,
+        normalization: str = 'percentile',
+        percentile: float = 99.9,
+        verbose: bool = True,
+    ):
         self.base_path = Path(base_path)
         self.voxel_size = voxel_size
         self.target_shape = tuple(target_shape)
         self.min_interval_months = int(min_interval_months)
         self.min_gap_months = int(min_gap_months)
         self.max_extrap_t = float(max_extrap_t)
+        self.normalization = normalization
+        self.percentile = float(percentile)
         self.verbose = verbose
         self.subjects = self._load_subjects()
         self.triplets = self._build_triplets()
@@ -62,6 +89,9 @@ class ADNITripletDataset(Dataset):
             print(f"\n[ADNITripletDataset] Loaded from: {self.base_path}")
             print(f"  Voxel size: {self.voxel_size}")
             print(f"  Target shape: {self.target_shape}")
+            print(f"  Normalization: {self.normalization}")
+            if self.normalization == 'percentile':
+                print(f"  Percentile: {self.percentile}")
             print(f"  Min interval months: {self.min_interval_months}")
             print(f"  Min gap months: {self.min_gap_months}")
             print(f"  Max extrapolation t: {self.max_extrap_t}")
@@ -71,6 +101,8 @@ class ADNITripletDataset(Dataset):
 
     def _load_subjects(self) -> List[SubjectRecord]:
         subjects = []
+        if not self.base_path.exists():
+            raise FileNotFoundError(f"Dataset split directory not found: {self.base_path}")
         subject_dirs = sorted([d for d in self.base_path.iterdir() if d.is_dir() and d.name.startswith('sub-')])
         for subject_dir in subject_dirs:
             sessions = []
@@ -114,7 +146,14 @@ class ADNITripletDataset(Dataset):
                             continue
                         if t_extrap <= 1.0 or t_extrap > self.max_extrap_t:
                             continue
-                        triplets.append({'subject_id': record.subject_id, 'source': sessions[i], 'middle': sessions[j], 'future': sessions[k], 't_interp': float(t_interp), 't_extrap': float(t_extrap)})
+                        triplets.append({
+                            'subject_id': record.subject_id,
+                            'source': sessions[i],
+                            'middle': sessions[j],
+                            'future': sessions[k],
+                            't_interp': float(t_interp),
+                            't_extrap': float(t_extrap),
+                        })
         return triplets
 
     def __len__(self) -> int:
@@ -122,9 +161,9 @@ class ADNITripletDataset(Dataset):
 
     def __getitem__(self, idx: int) -> Dict[str, object]:
         item = self.triplets[idx]
-        source_np = preprocess_volume(item['source']['path'], self.target_shape)
-        middle_np = preprocess_volume(item['middle']['path'], self.target_shape)
-        future_np = preprocess_volume(item['future']['path'], self.target_shape)
+        source_np = preprocess_volume(item['source']['path'], self.target_shape, self.normalization, self.percentile)
+        middle_np = preprocess_volume(item['middle']['path'], self.target_shape, self.normalization, self.percentile)
+        future_np = preprocess_volume(item['future']['path'], self.target_shape, self.normalization, self.percentile)
         return {
             'subject_id': item['subject_id'],
             'source_session': item['source']['session'],
@@ -141,36 +180,99 @@ class ADNITripletDataset(Dataset):
         }
 
 
-def create_dataloaders(data_root: str, voxel_size: str = '1mm', batch_size: int = 1, num_workers: int = 4, target_shape: Tuple[int, int, int] = (128,128,128), min_interval_months: int = 12, min_gap_months: int = 6, max_extrap_t: float = 2.5):
+def create_dataloaders(
+    data_root: str,
+    voxel_size: str = '1mm',
+    batch_size: int = 1,
+    num_workers: int = 4,
+    target_shape: Tuple[int, int, int] = (128, 128, 128),
+    min_interval_months: int = 12,
+    min_gap_months: int = 6,
+    max_extrap_t: float = 2.5,
+    normalization: str = 'percentile',
+    percentile: float = 99.9,
+    distributed: bool = False,
+    rank: int = 0,
+    world_size: int = 1,
+    seed: int = 42,
+    verbose: bool = True,
+):
     data_root = Path(data_root)
-    print('\n' + '=' * 70)
-    print('LOADING ADNI TRIPLET DATASET FOR EXTRAPOLATION-FOCUSED TIMEFLOW')
-    print('=' * 70)
-    print(f'Data root: {data_root}')
-    print(f'Voxel size: {voxel_size}')
-    print(f'Normalization: Per-image percentile 99.9 -> [0,1]')
-    print(f'Target shape: {target_shape}')
-    print(f'Triplet batch size: {batch_size}')
-    print(f'Min total interval: {min_interval_months} months')
-    print(f'Min local gap: {min_gap_months} months')
-    print(f'Max extrapolation t: {max_extrap_t}')
-    print('=' * 70)
-    train_dataset = ADNITripletDataset(str(data_root / 'train'), voxel_size, target_shape, min_interval_months, min_gap_months, max_extrap_t, True)
-    val_dataset = ADNITripletDataset(str(data_root / 'val'), voxel_size, target_shape, min_interval_months, min_gap_months, max_extrap_t, True)
-    test_dataset = ADNITripletDataset(str(data_root / 'test'), voxel_size, target_shape, min_interval_months, min_gap_months, max_extrap_t, True)
-    loader_kwargs = dict(num_workers=num_workers, pin_memory=True, persistent_workers=(num_workers > 0))
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, **loader_kwargs)
+    if verbose:
+        print('\n' + '=' * 70)
+        print('LOADING ADNI TRIPLET DATASET FOR EXTRAPOLATION-FOCUSED TIMEFLOW')
+        print('=' * 70)
+        print(f'Data root: {data_root}')
+        print(f'Voxel size: {voxel_size}')
+        print(f'Normalization: {normalization}')
+        if normalization == 'percentile':
+            print(f'Percentile: {percentile} -> [0,1]')
+        print(f'Target shape: {target_shape}')
+        print(f'Per-GPU batch size: {batch_size}')
+        print(f'Min total interval: {min_interval_months} months')
+        print(f'Min local gap: {min_gap_months} months')
+        print(f'Max extrapolation t: {max_extrap_t}')
+        print(f'Distributed: {distributed} | rank={rank} | world_size={world_size}')
+        print('=' * 70)
+
+    train_dataset = ADNITripletDataset(
+        str(data_root / 'train'), voxel_size, target_shape, min_interval_months, min_gap_months,
+        max_extrap_t, normalization, percentile, verbose,
+    )
+    val_dataset = ADNITripletDataset(
+        str(data_root / 'val'), voxel_size, target_shape, min_interval_months, min_gap_months,
+        max_extrap_t, normalization, percentile, verbose,
+    )
+    test_dataset = ADNITripletDataset(
+        str(data_root / 'test'), voxel_size, target_shape, min_interval_months, min_gap_months,
+        max_extrap_t, normalization, percentile, verbose,
+    )
+
+    train_sampler = None
+    if distributed:
+        train_sampler = DistributedSampler(
+            train_dataset,
+            num_replicas=world_size,
+            rank=rank,
+            shuffle=True,
+            seed=seed,
+            drop_last=False,
+        )
+
+    loader_kwargs = dict(
+        num_workers=num_workers,
+        pin_memory=True,
+        persistent_workers=(num_workers > 0),
+    )
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=batch_size,
+        shuffle=(train_sampler is None),
+        sampler=train_sampler,
+        **loader_kwargs,
+    )
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, **loader_kwargs)
     test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False, **loader_kwargs)
-    info = {'train_subjects': len(train_dataset.subjects), 'val_subjects': len(val_dataset.subjects), 'test_subjects': len(test_dataset.subjects), 'train_triplets': len(train_dataset), 'val_triplets': len(val_dataset), 'test_triplets': len(test_dataset)}
-    print('\n' + '=' * 70)
-    print('DATASET SUMMARY')
-    print('=' * 70)
-    print(f"Training subjects: {info['train_subjects']:,}")
-    print(f"Validation subjects: {info['val_subjects']:,}")
-    print(f"Test subjects: {info['test_subjects']:,}")
-    print(f"Training triplets: {info['train_triplets']:,}")
-    print(f"Validation triplets: {info['val_triplets']:,}")
-    print(f"Test triplets: {info['test_triplets']:,}")
-    print('=' * 70 + '\n')
+
+    info = {
+        'train_subjects': len(train_dataset.subjects),
+        'val_subjects': len(val_dataset.subjects),
+        'test_subjects': len(test_dataset.subjects),
+        'train_triplets': len(train_dataset),
+        'val_triplets': len(val_dataset),
+        'test_triplets': len(test_dataset),
+        'normalization': normalization,
+        'max_extrap_t': float(max_extrap_t),
+    }
+    if verbose:
+        print('\n' + '=' * 70)
+        print('DATASET SUMMARY')
+        print('=' * 70)
+        print(f"Training subjects: {info['train_subjects']:,}")
+        print(f"Validation subjects: {info['val_subjects']:,}")
+        print(f"Test subjects: {info['test_subjects']:,}")
+        print(f"Training triplets: {info['train_triplets']:,}")
+        print(f"Validation triplets: {info['val_triplets']:,}")
+        print(f"Test triplets: {info['test_triplets']:,}")
+        print('=' * 70 + '\n')
     return train_loader, val_loader, test_loader, info

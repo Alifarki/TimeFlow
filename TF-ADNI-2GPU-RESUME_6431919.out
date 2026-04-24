@@ -1,0 +1,127 @@
+════════════════════════════════════════════════════════════════
+TIMEFLOW ADNI TRAINING — RESUME MODEL-ONLY ON 2×A100
+════════════════════════════════════════════════════════════════
+Job ID:             6431919
+Node:               g1101
+Master addr:        g1101
+Master port:        29500
+World size:         2
+Data Root:          /scratch/project_2010689/datasetfull
+Save Directory:     /scratch/project_2010689/2026/TimeFlow_Results/timeflow_1mm_extrap_resume_2gpu
+Resume model:       /scratch/project_2010689/2026/TimeFlow_Results/timeflow_1mm_extrap/best_model.pth
+Resume start epoch: 9
+Voxel Size:         1mm
+Image Size:         128 128 128
+Normalization:      percentile
+Max Extrap t:       1.5
+Per-GPU Batch:      1
+Global Batch:       2
+Epochs:             100
+LR:                 7e-5
+Sim loss scale:     1e-5
+Delta corr loss w:  0.5
+AMP:                1 (bf16)
+════════════════════════════════════════════════════════════════
+Command:
+ python -u scripts/train_timeflow_adni.py --data-root /scratch/project_2010689/datasetfull --voxel-size 1mm --image-size 128 128 128 --normalization percentile --normalization-percentile 99.9 --min-interval-months 12 --min-gap-months 6 --max-extrap-t 1.5 --t-embed-dim 16 --batch-size 1 --epochs 100 --lr 7e-5 --lr-decay 0.999 --anchor-sim-weight 0.5 --future-sim-weight 0.5 --interp-sim-weight 1.0 --extrap-sim-weight 2.0 --sim-loss-scale 1e-5 --interp-delta-weight 1.0 --extrap-delta-weight 2.0 --delta-corr-loss-weight 0.5 --gradicon-weight 0.05 --grad-clip 1.0 --save-dir /scratch/project_2010689/2026/TimeFlow_Results/timeflow_1mm_extrap_resume_2gpu --save-interval 10 --val-every 1 --max-val-batches 0 --num-workers 4 --amp-dtype bf16 --seed 42 --resume /scratch/project_2010689/2026/TimeFlow_Results/timeflow_1mm_extrap/best_model.pth --resume-model-only --resume-start-epoch 9 --use-amp
+
+[2026-04-24 11:30:26,823] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-24 11:30:26,824] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+Random seed set as 43
+Random seed set as 42
+NCCL version 2.23.4+cuda12.6
+
+════════════════════════════════════════════════════════════════════════
+TIMEFLOW EXTRAPOLATION-FOCUSED TRAINING CONFIGURATION
+════════════════════════════════════════════════════════════════════════
+Distributed:          True
+World size / GPUs:    2
+Rank / local rank:    0 / 0
+Data Root:            /scratch/project_2010689/datasetfull
+Save Directory:       /scratch/project_2010689/2026/TimeFlow_Results/timeflow_1mm_extrap_resume_2gpu
+Image Size:           [128, 128, 128]
+Normalization:        percentile
+Max Extrap t:         1.5
+Per-GPU Batch Size:   1
+Global Batch Size:    2
+Epochs:               100
+LR:                   7e-05
+Sim loss scale:       1e-05
+Delta corr loss w:    0.5
+AMP:                  True (bf16)
+════════════════════════════════════════════════════════════════════════
+
+======================================================================
+LOADING ADNI TRIPLET DATASET FOR EXTRAPOLATION-FOCUSED TIMEFLOW
+======================================================================
+Data root: /scratch/project_2010689/datasetfull
+Voxel size: 1mm
+Normalization: percentile
+Percentile: 99.9 -> [0,1]
+Target shape: (128, 128, 128)
+Per-GPU batch size: 1
+Min total interval: 12 months
+Min local gap: 6 months
+Max extrapolation t: 1.5
+Distributed: True | rank=0 | world_size=2
+======================================================================
+
+[ADNITripletDataset] Loaded from: /scratch/project_2010689/datasetfull/train
+  Voxel size: 1mm
+  Target shape: (128, 128, 128)
+  Normalization: percentile
+  Percentile: 99.9
+  Min interval months: 12
+  Min gap months: 6
+  Max extrapolation t: 1.5
+  Total subjects: 1390
+  Total scans: 8147
+  Total triplets: 9547
+
+[ADNITripletDataset] Loaded from: /scratch/project_2010689/datasetfull/val
+  Voxel size: 1mm
+  Target shape: (128, 128, 128)
+  Normalization: percentile
+  Percentile: 99.9
+  Min interval months: 12
+  Min gap months: 6
+  Max extrapolation t: 1.5
+  Total subjects: 82
+  Total scans: 480
+  Total triplets: 538
+
+[ADNITripletDataset] Loaded from: /scratch/project_2010689/datasetfull/test
+  Voxel size: 1mm
+  Target shape: (128, 128, 128)
+  Normalization: percentile
+  Percentile: 99.9
+  Min interval months: 12
+  Min gap months: 6
+  Max extrapolation t: 1.5
+  Total subjects: 155
+  Total scans: 880
+  Total triplets: 1158
+
+======================================================================
+DATASET SUMMARY
+======================================================================
+Training subjects: 1,390
+Validation subjects: 82
+Test subjects: 155
+Training triplets: 9,547
+Validation triplets: 538
+Test triplets: 1,158
+======================================================================
+
+
+📂 Resuming from: /scratch/project_2010689/2026/TimeFlow_Results/timeflow_1mm_extrap/best_model.pth
+✓ Loaded checkpoint. Continuation starts at epoch 10.
+
+Model parameters: 1,318,579
+
+========================================================================
+STARTING TRAINING
+========================================================================
+
+Epoch 10/100
+------------------------------------------------------------------------
